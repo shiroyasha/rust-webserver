@@ -1,3 +1,5 @@
+extern crate webserver;
+
 use std::io::prelude::*;
 use std::net::TcpListener;
 use std::net::TcpStream;
@@ -5,17 +7,22 @@ use std::fs::File;
 use std::thread;
 use std::time::Duration;
 
+use webserver::ThreadPool;
+
 fn main() {
     let address = "0.0.0.0:8080";
     let listener = TcpListener::bind(address).unwrap();
+
+    let pool = ThreadPool::new(4);
 
     println!("Listening on {}", address);
 
     for stream in listener.incoming() {
         let stream = stream.unwrap();
 
-        handle_connection(stream);
-
+        pool.execute(|| {
+            handle_connection(stream);
+        });
     }
 }
 
